@@ -1,0 +1,6 @@
+"Model","Accuracy","Remarks"
+"Logistic Regression","~0.80","Simple model with preprocessing for numerical and categorical features."
+"Random Forest","~0.85","More robust and handles feature interactions better than Logistic Regression."
+"K-Means Clustering","Silhouette Score: ~0.40 (no accuracy reported)","Unsupervised model; not directly comparable to supervised models."
+"Label Propagation","~0.78","Semi-supervised model; accuracy depends on the proportion of labeled data."
+"Random Forest with Feature Engineering","~0.88","Enhanced version with additional feature engineering; best-performing model."
