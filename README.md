@@ -147,6 +147,7 @@ This project successfully developed a machine learning pipeline to predict custo
 ---
 FEATURED
 
+https://dev.to/ndumbe0/telco-churn-classification-project-3pol
 
 Owner (ndumbemoses@gmail.com) : [Moses N Ndumbe]
 
