@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  telco-churn-app:
+    build: .
+    container_name: telco-churn-predictor
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    env_file:
+      - .env
+    environment:
+      - STREAMLIT_SERVER_MAX_UPLOAD_SIZE=10
+    restart: unless-stopped
