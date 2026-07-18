@@ -50,22 +50,26 @@ def predict_batch(df: pd.DataFrame) -> pd.DataFrame:
     if pipeline is None:
         raise FileNotFoundError("Model not found")
 
-    # Keep original identifiers if present
-    id_col = None
-    if "customerID" in df.columns:
-        id_col = df["customerID"].reset_index(drop=True)
-
-    # Apply full cleaning (handles Yes/No, TotalCharges, etc.) then _preprocess_input
+    # Apply full cleaning (handles Yes/No, TotalCharges, NaN rows, etc.)
+    # Keep customerID aside AFTER cleaning so lengths always match
     try:
         from src.data.load_data import clean_data
-        # clean_data drops customerID and Churn automatically
-        df_clean = clean_data(df)
-        # Drop Churn column if present (it's the target, not a feature)
+        # Preserve customerID through cleaning by keeping it in df temporarily
+        has_id = "customerID" in df.columns
+        df_clean = clean_data(df)          # drops customerID + Churn internally
+        # Drop Churn column if it survived cleaning
         df_clean = df_clean.drop(columns=["Churn"], errors="ignore")
     except Exception:
+        has_id = "customerID" in df.columns
         df_clean = df.copy()
         df_clean = df_clean.drop(columns=["customerID", "Churn"], errors="ignore")
 
+    # If original had customerID, recover it aligned to the cleaned index
+    id_col = None
+    if has_id and "customerID" in df.columns:
+        id_col = df["customerID"].loc[df_clean.index].reset_index(drop=True)
+
+    df_clean = df_clean.reset_index(drop=True)
     df_clean = _preprocess_input(df_clean)
 
     # Ensure all expected columns exist
