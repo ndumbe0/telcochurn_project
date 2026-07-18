@@ -194,3 +194,97 @@ def get_metrics_summary(pipeline, X_test, y_test):
     except Exception as e:
         logger.warning(f"Metrics summary failed: {e}")
         return {}
+
+
+def get_threshold_metrics(pipeline, X_test, y_test, threshold: float = 0.5) -> dict:
+    """Return classification metrics at a custom decision threshold."""
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+    try:
+        from src.models.predict import _preprocess_input
+        X_proc = _preprocess_input(X_test.copy())
+        y_proba = pipeline.predict_proba(X_proc)[:, 1]
+        y_pred = (y_proba >= threshold).astype(int)
+        return {
+            "Accuracy": accuracy_score(y_test, y_pred),
+            "Precision": precision_score(y_test, y_pred, zero_division=0),
+            "Recall": recall_score(y_test, y_pred, zero_division=0),
+            "F1 Score": f1_score(y_test, y_pred, zero_division=0),
+            "Predicted Churn %": y_pred.mean() * 100,
+        }
+    except Exception as e:
+        logger.warning(f"Threshold metrics failed: {e}")
+        return {}
+
+
+def get_threshold_curve_fig(pipeline, X_test, y_test) -> go.Figure:
+    """Plot how Precision, Recall, F1 change across threshold values."""
+    try:
+        from src.models.predict import _preprocess_input
+        from sklearn.metrics import precision_score, recall_score, f1_score
+        X_proc = _preprocess_input(X_test.copy())
+        y_proba = pipeline.predict_proba(X_proc)[:, 1]
+
+        thresholds = np.linspace(0.05, 0.95, 50)
+        precisions, recalls, f1s = [], [], []
+        for t in thresholds:
+            yp = (y_proba >= t).astype(int)
+            precisions.append(precision_score(y_test, yp, zero_division=0))
+            recalls.append(recall_score(y_test, yp, zero_division=0))
+            f1s.append(f1_score(y_test, yp, zero_division=0))
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=thresholds, y=precisions, mode="lines", name="Precision",
+                                 line=dict(color="#3498db", width=2)))
+        fig.add_trace(go.Scatter(x=thresholds, y=recalls, mode="lines", name="Recall",
+                                 line=dict(color="#e74c3c", width=2)))
+        fig.add_trace(go.Scatter(x=thresholds, y=f1s, mode="lines", name="F1",
+                                 line=dict(color="#2ecc71", width=2.5, dash="dot")))
+        fig.update_layout(
+            title="Precision / Recall / F1 vs Decision Threshold",
+            xaxis_title="Threshold",
+            yaxis_title="Score",
+            yaxis_range=[0, 1.05],
+            height=380,
+            legend=dict(orientation="h", yanchor="bottom", y=-0.3),
+        )
+        return fig
+    except Exception as e:
+        logger.warning(f"Threshold curve failed: {e}")
+        return None
+
+
+def get_calibration_fig(pipeline, X_test, y_test, n_bins: int = 10) -> go.Figure:
+    """Reliability (calibration) diagram: fraction of positives vs mean predicted probability."""
+    try:
+        from sklearn.calibration import calibration_curve
+        from src.models.predict import _preprocess_input
+        X_proc = _preprocess_input(X_test.copy())
+        y_proba = pipeline.predict_proba(X_proc)[:, 1]
+        frac_pos, mean_pred = calibration_curve(y_test, y_proba, n_bins=n_bins, strategy="uniform")
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=mean_pred, y=frac_pos,
+            mode="lines+markers",
+            name="Model",
+            line=dict(color="royalblue", width=2.5),
+            marker=dict(size=8),
+        ))
+        fig.add_trace(go.Scatter(
+            x=[0, 1], y=[0, 1],
+            mode="lines",
+            name="Perfect Calibration",
+            line=dict(dash="dash", color="gray"),
+        ))
+        fig.update_layout(
+            title="Calibration Curve (Reliability Diagram)",
+            xaxis_title="Mean Predicted Probability",
+            yaxis_title="Fraction of Positives (Actual Churn Rate)",
+            xaxis_range=[0, 1],
+            yaxis_range=[0, 1],
+            height=380,
+        )
+        return fig
+    except Exception as e:
+        logger.warning(f"Calibration curve failed: {e}")
+        return None
