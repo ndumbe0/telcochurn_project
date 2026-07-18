@@ -22,13 +22,13 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "streamlit run src/app/app.py --server.port 5000 --server.address 0.0.0.0 --server.headless true"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "LD_LIBRARY_PATH=/nix/store/5g6x0jqw3wf6p0f2bbznac64lxk2f300-julia-bin-1.11.5/lib/julia:$LD_LIBRARY_PATH streamlit run src/app/app.py --server.port 5000 --server.address 0.0.0.0 --server.headless true"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000

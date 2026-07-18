@@ -49,12 +49,48 @@ def predict_batch(df: pd.DataFrame) -> pd.DataFrame:
     pipeline, model_name, cat_cols, num_cols = load_model_info()
     if pipeline is None:
         raise FileNotFoundError("Model not found")
-    df = _preprocess_input(df)
-    proba = pipeline.predict_proba(df)[:, 1]
+
+    # Keep original identifiers if present
+    id_col = None
+    if "customerID" in df.columns:
+        id_col = df["customerID"].reset_index(drop=True)
+
+    # Apply full cleaning (handles Yes/No, TotalCharges, etc.) then _preprocess_input
+    try:
+        from src.data.load_data import clean_data
+        # clean_data drops customerID and Churn automatically
+        df_clean = clean_data(df)
+        # Drop Churn column if present (it's the target, not a feature)
+        df_clean = df_clean.drop(columns=["Churn"], errors="ignore")
+    except Exception:
+        df_clean = df.copy()
+        df_clean = df_clean.drop(columns=["customerID", "Churn"], errors="ignore")
+
+    df_clean = _preprocess_input(df_clean)
+
+    # Ensure all expected columns exist
+    expected_cols = (num_cols or []) + (cat_cols or [])
+    missing = [c for c in expected_cols if c not in df_clean.columns]
+    if missing:
+        raise ValueError(
+            f"Uploaded file is missing required columns: {missing}. "
+            f"Please include all customer feature columns."
+        )
+
+    proba = pipeline.predict_proba(df_clean)[:, 1]
     preds = (proba >= 0.5).astype(int)
-    result = df.copy()
-    result["Churn_Probability"] = proba
-    result["Prediction"] = ["Yes" if p == 1 else "No" for p in preds]
+
+    result = df_clean.copy()
+    if id_col is not None:
+        result.insert(0, "customerID", id_col.values)
+    result["Churn_Probability"] = (proba * 100).round(1)
+    result["Prediction"] = ["Churn" if p == 1 else "Stay" for p in preds]
+    result["Risk_Level"] = pd.cut(
+        proba,
+        bins=[0, 0.3, 0.6, 1.0],
+        labels=["Low", "Medium", "High"],
+        include_lowest=True,
+    )
     return result
 
 
