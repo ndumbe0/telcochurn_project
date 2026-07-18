@@ -36,14 +36,14 @@ def build_preprocessor(cat_cols: list, num_cols: list) -> ColumnTransformer:
 def build_models(random_state: int = 42) -> dict:
     return {
         "Logistic Regression": LogisticRegression(max_iter=2000, random_state=random_state, class_weight="balanced"),
-        "Decision Tree": DecisionTreeClassifier(random_state=random_state, class_weight="balanced", max_depth=10),
-        "Random Forest": RandomForestClassifier(n_estimators=50, random_state=random_state, class_weight="balanced", n_jobs=-1),
-        "XGBoost": xgb.XGBClassifier(n_estimators=50, random_state=random_state, scale_pos_weight=3, eval_metric="logloss"),
-        "LightGBM": lgb.LGBMClassifier(n_estimators=50, random_state=random_state, class_weight="balanced", verbose=-1),
+        "Decision Tree": DecisionTreeClassifier(random_state=random_state, class_weight="balanced", max_depth=8),
+        "Random Forest": RandomForestClassifier(n_estimators=200, random_state=random_state, class_weight="balanced", n_jobs=-1),
+        "XGBoost": xgb.XGBClassifier(n_estimators=200, random_state=random_state, scale_pos_weight=3, eval_metric="logloss", learning_rate=0.05, max_depth=5, subsample=0.8, colsample_bytree=0.8),
+        "LightGBM": lgb.LGBMClassifier(n_estimators=200, random_state=random_state, class_weight="balanced", verbose=-1, num_leaves=31, learning_rate=0.05),
     }
 
 
-def evaluate_model(pipeline, X_train, y_train, X_test, y_test, name: str, cv: int = 2) -> dict:
+def evaluate_model(pipeline, X_train, y_train, X_test, y_test, name: str, cv: int = 5) -> dict:
     logger.info(f"Evaluating {name}...")
     try:
         pipeline.fit(X_train, y_train)
@@ -135,6 +135,19 @@ def tune_best_model(results, trained_models, X_train, y_train, X_test, y_test, c
     else:
         best_idx = np.argmax([r.get("roc_auc", 0) for r in valid])
         best_name = valid[best_idx]["name"]
+    # Prefer tree models (better SHAP + handle non-linearity) when within 0.5% of best AUC
+    PREFERRED = ["XGBoost", "LightGBM", "Random Forest"]
+    best_auc = max(r.get("roc_auc", 0) for r in valid)
+    for name in PREFERRED:
+        for r in valid:
+            if r["name"] == name and r.get("roc_auc", 0) >= best_auc - 0.005:
+                if best_name not in PREFERRED:
+                    logger.info(f"Preferring {name} over {best_name} for tree-model SHAP support (AUC within 0.5%)")
+                    best_name = name
+                break
+        else:
+            continue
+        break
     if best_name == "Voting Ensemble":
         best_name = "XGBoost"
     logger.info(f"Best model: {best_name}. Tuning...")
@@ -144,30 +157,37 @@ def tune_best_model(results, trained_models, X_train, y_train, X_test, y_test, c
     X_test_p = preprocessor.transform(X_test)
     param_grids = {
         "XGBoost": {
-            "n_estimators": [100, 200],
+            "n_estimators": [200, 300, 400],
             "max_depth": [3, 5, 7],
             "learning_rate": [0.01, 0.05, 0.1],
-            "subsample": [0.8, 1.0],
+            "subsample": [0.7, 0.8, 1.0],
+            "colsample_bytree": [0.7, 0.8, 1.0],
+            "min_child_weight": [1, 3, 5],
+            "gamma": [0, 0.1, 0.3],
         },
         "LightGBM": {
-            "n_estimators": [100, 200],
-            "num_leaves": [15, 31, 63],
+            "n_estimators": [200, 300, 400],
+            "num_leaves": [15, 31, 63, 127],
             "learning_rate": [0.01, 0.05, 0.1],
+            "min_child_samples": [10, 20, 30],
+            "subsample": [0.7, 0.8, 1.0],
         },
         "Random Forest": {
-            "n_estimators": [100, 200],
-            "max_depth": [5, 10, 15],
+            "n_estimators": [200, 300],
+            "max_depth": [5, 10, 15, None],
+            "min_samples_split": [2, 5, 10],
+            "min_samples_leaf": [1, 2, 4],
         },
         "Logistic Regression": {
-            "C": [0.1, 1.0, 10.0],
+            "C": [0.01, 0.1, 1.0, 10.0, 100.0],
             "solver": ["liblinear", "lbfgs"],
         },
     }
-    param_grid = param_grids.get(best_name, {"n_estimators": [100, 200]})
+    param_grid = param_grids.get(best_name, {"n_estimators": [200, 300]})
     smote = SMOTE(random_state=42, sampling_strategy=0.8)
     X_train_r, y_train_r = smote.fit_resample(X_train_p, y_train)
-    n_iter = min(3, len(param_grid.get(list(param_grid.keys())[0], [100])))
-    search = RandomizedSearchCV(model, param_grid, n_iter=n_iter, cv=StratifiedKFold(2),
+    n_iter = 20
+    search = RandomizedSearchCV(model, param_grid, n_iter=n_iter, cv=StratifiedKFold(5),
                                 scoring="roc_auc", n_jobs=-1, random_state=42)
     search.fit(X_train_r, y_train_r)
     logger.info(f"Best params for {best_name}: {search.best_params_}")
