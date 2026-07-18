@@ -253,6 +253,155 @@ def get_threshold_curve_fig(pipeline, X_test, y_test) -> go.Figure:
         return None
 
 
+def get_shap_dependence_fig(
+    pipeline, X_test: pd.DataFrame, feature_name: str,
+    cat_cols: list, num_cols: list, sample_n: int = 300,
+) -> go.Figure:
+    """
+    SHAP dependence plot: SHAP value for `feature_name` vs. its raw value,
+    coloured by the feature with the strongest interaction.
+    """
+    try:
+        import shap
+        from src.models.predict import _preprocess_input
+
+        X_sample = X_test.sample(min(sample_n, len(X_test)), random_state=42)
+        X_proc_raw = _preprocess_input(X_sample.copy())
+
+        preprocessor = pipeline.named_steps["preprocessor"]
+        model = pipeline.named_steps["classifier"]
+
+        cat_feat = preprocessor.named_transformers_["cat"].get_feature_names_out(cat_cols)
+        feature_names = num_cols + list(cat_feat)
+
+        X_transformed = preprocessor.transform(X_proc_raw)
+        X_df = pd.DataFrame(X_transformed, columns=feature_names)
+
+        if hasattr(model, "feature_importances_"):
+            explainer = shap.TreeExplainer(model)
+        else:
+            explainer = shap.LinearExplainer(model, X_df)
+
+        shap_vals = explainer.shap_values(X_df)
+        if isinstance(shap_vals, list):
+            shap_vals = shap_vals[1]
+
+        # Resolve feature name (may be encoded)
+        if feature_name not in feature_names:
+            # Try to find the first matching encoded column
+            matches = [f for f in feature_names if f.startswith(feature_name)]
+            if not matches:
+                return None
+            feature_name = matches[0]
+
+        feat_idx = feature_names.index(feature_name)
+        x_vals = X_df[feature_name].values
+        y_vals = shap_vals[:, feat_idx]
+
+        # Find interaction feature (highest absolute correlation with shap vals)
+        corrs = {
+            f: abs(np.corrcoef(X_df[f].values, y_vals)[0, 1])
+            for f in feature_names
+            if f != feature_name and not np.isnan(
+                np.corrcoef(X_df[f].values, y_vals)[0, 1]
+            )
+        }
+        interaction_feat = max(corrs, key=corrs.get) if corrs else None
+        color_vals = X_df[interaction_feat].values if interaction_feat else None
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=x_vals,
+            y=y_vals,
+            mode="markers",
+            marker=dict(
+                color=color_vals if color_vals is not None else "#3498db",
+                colorscale="RdYlBu_r",
+                size=7,
+                opacity=0.7,
+                showscale=color_vals is not None,
+                colorbar=dict(title=interaction_feat) if interaction_feat else None,
+            ),
+            text=[f"SHAP: {v:.4f}" for v in y_vals],
+            hoverinfo="text",
+        ))
+        fig.add_hline(y=0, line_dash="dash", line_color="gray")
+        fig.update_layout(
+            title=f"SHAP Dependence Plot — {feature_name}"
+            + (f" (coloured by {interaction_feat})" if interaction_feat else ""),
+            xaxis_title=feature_name,
+            yaxis_title=f"SHAP value for {feature_name}",
+            height=420,
+        )
+        return fig
+    except Exception as e:
+        logger.warning(f"SHAP dependence plot failed: {e}")
+        return None
+
+
+def get_pdp_fig(
+    pipeline, X_test: pd.DataFrame, feature_name: str,
+    cat_cols: list, num_cols: list,
+) -> go.Figure:
+    """
+    Partial Dependence Plot: average model output as one feature varies,
+    holding all others at their observed values.
+    """
+    try:
+        from src.models.predict import _preprocess_input
+        from sklearn.inspection import partial_dependence
+
+        X_proc = _preprocess_input(X_test.copy())
+        preprocessor = pipeline.named_steps["preprocessor"]
+        model = pipeline.named_steps["classifier"]
+
+        cat_feat = list(preprocessor.named_transformers_["cat"].get_feature_names_out(cat_cols))
+        feature_names = num_cols + cat_feat
+
+        X_transformed = pd.DataFrame(
+            preprocessor.transform(X_proc), columns=feature_names
+        )
+
+        if feature_name not in feature_names:
+            matches = [f for f in feature_names if f.startswith(feature_name)]
+            if not matches:
+                return None
+            feature_name = matches[0]
+
+        feat_idx = feature_names.index(feature_name)
+        result = partial_dependence(
+            model, X_transformed, features=[feat_idx],
+            kind="average", grid_resolution=50,
+        )
+        grid_vals = result["grid_values"][0]
+        avg_preds = result["average"][0]
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=grid_vals, y=avg_preds,
+            mode="lines+markers",
+            line=dict(color="royalblue", width=2.5),
+            marker=dict(size=5),
+            name="Avg Prediction",
+            fill="tozeroy",
+            fillcolor="rgba(52,152,219,0.08)",
+        ))
+        fig.add_hline(
+            y=avg_preds.mean(), line_dash="dot", line_color="gray",
+            annotation_text=f"Mean: {avg_preds.mean():.3f}",
+        )
+        fig.update_layout(
+            title=f"Partial Dependence Plot — {feature_name}",
+            xaxis_title=feature_name,
+            yaxis_title="Average Predicted Churn Probability",
+            height=380,
+        )
+        return fig
+    except Exception as e:
+        logger.warning(f"PDP failed: {e}")
+        return None
+
+
 def get_calibration_fig(pipeline, X_test, y_test, n_bins: int = 10) -> go.Figure:
     """Reliability (calibration) diagram: fraction of positives vs mean predicted probability."""
     try:
