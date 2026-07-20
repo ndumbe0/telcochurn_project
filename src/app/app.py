@@ -30,6 +30,7 @@ from src.app.clustering import (
 )
 from src.app.roi import compute_roi, get_roi_comparison_fig, get_breakeven_fig
 from src.app.pdf_report import generate_customer_pdf
+from src.app.pipeline_tab import render_data_pipeline
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -1289,7 +1290,7 @@ def main():
     df_raw, df_clean = load_data()
     pipeline, model_name, cat_cols, num_cols = load_model()
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
         "📊 Executive Summary",
         "🔮 Single Prediction",
         "📁 Batch Prediction",
@@ -1299,6 +1300,7 @@ def main():
         "📈 EDA Dashboard",
         "🏆 Model Performance",
         "🤖 AI Assistant",
+        "🔄 Data Pipeline",
     ])
 
     with tab1:
@@ -1359,6 +1361,9 @@ def main():
 
     with tab8:
         render_model_performance(pipeline, model_name, cat_cols, num_cols)
+
+    with tab10:
+        render_data_pipeline()
 
     with tab9:
         st.header("🤖 AI Assistant")
