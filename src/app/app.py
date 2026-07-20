@@ -335,13 +335,13 @@ def display_batch_insights(results: pd.DataFrame):
             risk_counts.columns = ["Risk", "Count"]
             fig = px.pie(risk_counts, names="Risk", values="Count", hole=0.45,
                          color="Risk",
-                         color_discrete_map={"Low": "#2ecc71", "Medium": "#f39c12", "High": "#e74c3c"},
+                         color_discrete_map={"Low": "#1f77b4", "Medium": "#ff7f0e", "High": "#d62728"},
                          title="Customer Risk Distribution")
             fig.update_traces(textinfo="label+percent+value")
             st.plotly_chart(fig, use_container_width=True)
     with c2:
         fig = px.histogram(results, x="Churn_Probability", color="Prediction",
-                           color_discrete_map={"Churn": "#e74c3c", "Stay": "#2ecc71"},
+                           color_discrete_map={"Churn": "#d62728", "Stay": "#1f77b4"},
                            nbins=25, title="Churn Probability Distribution",
                            labels={"Churn_Probability": "Churn Probability (%)"})
         fig.update_layout(barmode="overlay", bargap=0.05)
@@ -368,7 +368,7 @@ def display_batch_insights(results: pd.DataFrame):
     st.dataframe(
         top_risk[display_cols].style.background_gradient(
             subset=["Churn_Probability"] if "Churn_Probability" in display_cols else [],
-            cmap="RdYlGn_r"),
+            cmap="YlOrRd"),
         use_container_width=True,
     )
 
@@ -429,10 +429,11 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
 
     # ── KPI cards ─────────────────────────────────────────────────────────────
     st.subheader("📌 Key Metrics")
-    k1, k2, k3, k4, k5, k6 = st.columns(6)
+    k1, k2, k3 = st.columns(3)
     k1.metric("Total Customers", f"{total:,}")
     k2.metric("Churn Rate", f"{churn_rate:.1%}")
-    k3.metric("Monthly Churner Revenue", f"${churner_revenue:,.0f}")
+    k3.metric("Monthly Revenue at Risk", f"${churner_revenue:,.0f}")
+    k4, k5, k6 = st.columns(3)
     k4.metric("Avg Monthly Charges", f"${avg_monthly:.2f}")
     k5.metric("Avg Tenure", f"{avg_tenure:.1f} mo")
     if model_auc:
@@ -448,7 +449,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
             grp = (df_clean.groupby("Contract")["Churn"].mean() * 100).reset_index()
             grp.columns = ["Contract", "Churn Rate (%)"]
             fig = px.bar(grp, x="Contract", y="Churn Rate (%)",
-                         color="Churn Rate (%)", color_continuous_scale="RdYlGn_r",
+                         color="Churn Rate (%)", color_continuous_scale="Oranges",
                          text=[f"{v:.1f}%" for v in grp["Churn Rate (%)"]],
                          title="Churn Rate by Contract")
             fig.update_traces(textposition="outside")
@@ -460,7 +461,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
             grp2 = (df_clean.groupby("InternetService")["Churn"].mean() * 100).reset_index()
             grp2.columns = ["Internet", "Churn Rate (%)"]
             fig2 = px.bar(grp2, x="Internet", y="Churn Rate (%)",
-                          color="Churn Rate (%)", color_continuous_scale="RdYlGn_r",
+                          color="Churn Rate (%)", color_continuous_scale="Oranges",
                           text=[f"{v:.1f}%" for v in grp2["Churn Rate (%)"]],
                           title="Churn Rate by Internet Service")
             fig2.update_traces(textposition="outside")
@@ -494,8 +495,8 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
         fig_rev = px.pie(rev_data, names="Segment", values="Amount", hole=0.5,
                          color="Segment",
                          color_discrete_map={
-                             "Monthly Revenue (Retained)": "#2ecc71",
-                             "Monthly Revenue at Risk": "#e74c3c",
+                             "Monthly Revenue (Retained)": "#1f77b4",
+                             "Monthly Revenue at Risk": "#d62728",
                          },
                          title=f"Total Monthly Revenue: ${total_revenue:,.0f}")
         fig_rev.update_traces(textinfo="label+percent+value",
@@ -529,13 +530,16 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
         st.subheader("🕓 Recent Predictions (this session)")
         hist_df = pd.DataFrame(history[:5])
         st.dataframe(
-            hist_df.style.background_gradient(subset=["Churn Prob %"], cmap="RdYlGn_r"),
+            hist_df.style.background_gradient(subset=["Churn Prob %"], cmap="YlOrRd"),
             use_container_width=True, hide_index=True,
         )
 
 
 def render_single_prediction(df_clean, pipeline, model_name, cat_cols, num_cols):
-    st.header("Single Customer Prediction")
+    st.header("🔮 Single Customer Prediction")
+    if pipeline is None:
+        st.error("⚠️ No trained model found. Please run `python -m src.models.train` first.")
+        return
     st.markdown(f"**Active Model:** `{model_name or 'Not loaded'}`")
 
     customer_data = build_customer_input(cat_cols, num_cols)
@@ -639,7 +643,7 @@ def render_single_prediction(df_clean, pipeline, model_name, cat_cols, num_cols)
         with st.expander(f"📜 Prediction History ({len(history)} records)", expanded=False):
             hist_df = pd.DataFrame(history)
             st.dataframe(
-                hist_df.style.background_gradient(subset=["Churn Prob %"], cmap="RdYlGn_r"),
+                hist_df.style.background_gradient(subset=["Churn Prob %"], cmap="YlOrRd"),
                 use_container_width=True, hide_index=True,
             )
             if st.button("🗑️ Clear History"):
@@ -648,48 +652,113 @@ def render_single_prediction(df_clean, pipeline, model_name, cat_cols, num_cols)
 
 
 def render_batch_prediction():
-    st.header("Batch Prediction")
-    st.markdown("Upload a CSV file with customer data to predict churn for multiple customers.")
+    st.header("📁 Batch Prediction")
+    st.markdown("Upload a CSV file with customer data to predict churn for multiple customers at once.")
+
+    pipeline, model_name, cat_cols, num_cols = load_model()
+    if pipeline is None:
+        st.error("⚠️ No trained model found. Please run `python -m src.models.train` first.")
+        return
 
     sample_path = Path(__file__).resolve().parent.parent.parent / "data" / "processed" / "test.csv"
-    if sample_path.exists():
-        with open(sample_path, "rb") as f:
-            st.download_button("⬇️ Download sample CSV", data=f,
-                               file_name="sample_customers.csv", mime="text/csv")
 
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-    if uploaded_file is not None:
-        df_batch = pd.read_csv(uploaded_file)
-        st.markdown(f"**Uploaded:** {len(df_batch):,} rows × {df_batch.shape[1]} columns")
-        with st.expander("Preview uploaded data"):
-            st.dataframe(df_batch.head(10), use_container_width=True)
+    # ── Empty-state instructions ───────────────────────────────────────────────
+    with st.container(border=True):
+        st.markdown("#### 📋 How it works")
+        ic1, ic2, ic3 = st.columns(3)
+        ic1.markdown("**1️⃣ Download sample**  \nUse our sample CSV to see the required column format.")
+        ic2.markdown("**2️⃣ Upload your file**  \nCSV must include tenure, MonthlyCharges, Contract, InternetService and other feature columns.")
+        ic3.markdown("**3️⃣ Get predictions**  \nChurn probability, risk level, CLV, and revenue at risk for every customer.")
+        if sample_path.exists():
+            with open(sample_path, "rb") as f:
+                st.download_button(
+                    "⬇️ Download Sample CSV", data=f,
+                    file_name="sample_customers.csv", mime="text/csv",
+                    use_container_width=True,
+                )
 
-        if st.button("Run Batch Prediction", type="primary"):
-            with st.spinner("Running predictions…"):
-                try:
-                    results = predict_batch(df_batch)
-                    results = add_clv_to_batch(results)
-                    st.success(f"✅ Predictions complete for {len(results):,} customers!")
+    uploaded_file = st.file_uploader("Choose a CSV file (max 10 MB)", type="csv")
 
-                    dl1, dl2 = st.columns(2)
-                    with dl1:
-                        st.download_button("⬇️ Download CSV",
-                                           data=results.to_csv(index=False).encode(),
-                                           file_name="churn_predictions.csv", mime="text/csv")
-                    with dl2:
-                        st.download_button("⬇️ Download Excel",
-                                           data=df_to_excel(results),
-                                           file_name="churn_predictions.xlsx",
-                                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    if uploaded_file is None:
+        return
 
-                    with st.expander("Full results table", expanded=False):
-                        st.dataframe(results, use_container_width=True)
+    # ── File size validation ───────────────────────────────────────────────────
+    MAX_MB = 10
+    size_mb = len(uploaded_file.getvalue()) / (1024 * 1024)
+    if size_mb > MAX_MB:
+        st.error(
+            f"❌ File is **{size_mb:.1f} MB** — maximum allowed size is {MAX_MB} MB.  "
+            f"Please split your data into smaller batches."
+        )
+        return
 
-                    display_batch_insights(results)
+    # ── Parse CSV ──────────────────────────────────────────────────────────────
+    try:
+        df_batch = pd.read_csv(io.BytesIO(uploaded_file.getvalue()))
+    except Exception as e:
+        st.error(f"❌ Could not read CSV file: {e}")
+        return
 
-                except Exception as e:
-                    st.error(f"Batch prediction failed: {e}")
-                    logger.exception(e)
+    # ── Column schema validation ───────────────────────────────────────────────
+    REQUIRED_COLS = [
+        "tenure", "MonthlyCharges", "TotalCharges", "Contract",
+        "InternetService", "PaymentMethod",
+    ]
+    missing_cols = [c for c in REQUIRED_COLS if c not in df_batch.columns]
+    if missing_cols:
+        st.error(
+            f"❌ Missing required columns: **{', '.join(missing_cols)}**  \n"
+            f"Download the sample CSV above to see the full expected format."
+        )
+        return
+
+    st.success(f"✅ File loaded: **{len(df_batch):,} rows × {df_batch.shape[1]} columns** ({size_mb:.2f} MB)")
+    with st.expander("Preview uploaded data"):
+        st.dataframe(df_batch.head(10), use_container_width=True)
+
+    # ── Caching keyed to file content hash ────────────────────────────────────
+    file_hash = hash(uploaded_file.getvalue())
+    cache_key = f"batch_results_{file_hash}"
+
+    run_col, _ = st.columns([1, 3])
+    if run_col.button("🚀 Run Batch Prediction", type="primary", use_container_width=True):
+        with st.spinner(f"Running predictions on {len(df_batch):,} customers…"):
+            try:
+                results = predict_batch(df_batch)
+                results = add_clv_to_batch(results)
+                st.session_state[cache_key] = results
+            except Exception as e:
+                st.error(f"❌ Batch prediction failed: {e}")
+                logger.exception(e)
+                return
+
+    if cache_key not in st.session_state:
+        return
+
+    results = st.session_state[cache_key]
+    st.success(f"✅ Predictions complete for **{len(results):,} customers**!")
+
+    dl1, dl2 = st.columns(2)
+    with dl1:
+        st.download_button(
+            "⬇️ Download CSV",
+            data=results.to_csv(index=False).encode(),
+            file_name="churn_predictions.csv", mime="text/csv",
+            use_container_width=True,
+        )
+    with dl2:
+        st.download_button(
+            "⬇️ Download Excel",
+            data=df_to_excel(results),
+            file_name="churn_predictions.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+        )
+
+    with st.expander("Full results table", expanded=False):
+        st.dataframe(results, use_container_width=True)
+
+    display_batch_insights(results)
 
 
 def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dict, recs: list):
@@ -819,7 +888,7 @@ def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dic
             x=[r["delta_pct"] for r in recs],
             y=[r["title"] for r in recs],
             orientation="h",
-            marker_color=["#2ecc71" if r["delta_pct"] > 5 else "#f39c12" for r in recs],
+            marker_color=["#1f77b4" if r["delta_pct"] > 5 else "#ff7f0e" for r in recs],
             text=[f"−{r['delta_pct']:.1f}pp → {r['new_prob']:.1%}" for r in recs],
             textposition="outside",
         ))
@@ -981,7 +1050,7 @@ def render_segment_profiler(df_clean: pd.DataFrame):
             grp = seg.groupby("Contract")["Churn"].mean().reset_index()
             grp["Churn Rate %"] = grp["Churn"] * 100
             fig = px.bar(grp, x="Contract", y="Churn Rate %",
-                         color="Churn Rate %", color_continuous_scale="RdYlGn_r",
+                         color="Churn Rate %", color_continuous_scale="Oranges",
                          text=[f"{v:.1f}%" for v in grp["Churn Rate %"]],
                          title="Churn Rate by Contract (Segment)")
             fig.update_traces(textposition="outside")
@@ -992,7 +1061,7 @@ def render_segment_profiler(df_clean: pd.DataFrame):
             grp2 = seg.groupby("InternetService")["Churn"].mean().reset_index()
             grp2["Churn Rate %"] = grp2["Churn"] * 100
             fig2 = px.bar(grp2, x="InternetService", y="Churn Rate %",
-                          color="Churn Rate %", color_continuous_scale="RdYlGn_r",
+                          color="Churn Rate %", color_continuous_scale="Oranges",
                           text=[f"{v:.1f}%" for v in grp2["Churn Rate %"]],
                           title="Churn Rate by Internet Service (Segment)")
             fig2.update_traces(textposition="outside")
@@ -1016,7 +1085,7 @@ def render_segment_profiler(df_clean: pd.DataFrame):
         fig_coh.add_trace(go.Bar(
             x=cohort["Tenure Band"].astype(str), y=cohort["Churn Rate %"],
             name="Churn Rate %",
-            marker=dict(color=cohort["Churn Rate %"], colorscale="RdYlGn_r"),
+            marker=dict(color=cohort["Churn Rate %"], colorscale="Oranges"),
             text=[f"{v:.1f}%" for v in cohort["Churn Rate %"]], textposition="outside", yaxis="y1",
         ))
         fig_coh.add_trace(go.Scatter(
@@ -1119,12 +1188,14 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
     st.subheader("🎚️ Decision Threshold Tuning")
     threshold = st.slider("Decision Threshold", 0.05, 0.95, 0.50, step=0.01)
     if X_test is not None and y_test is not None:
-        t_metrics = get_threshold_metrics(pipeline, X_test, y_test, threshold)
+        with st.spinner("Computing threshold metrics…"):
+            t_metrics = get_threshold_metrics(pipeline, X_test, y_test, threshold)
         if t_metrics:
             tm_cols = st.columns(len(t_metrics))
             for col, (name, val) in zip(tm_cols, t_metrics.items()):
                 col.metric(name, f"{val:.4f}" if name != "Predicted Churn %" else f"{val:.1f}%")
-        thresh_fig = get_threshold_curve_fig(pipeline, X_test, y_test)
+        with st.spinner("Building threshold curve…"):
+            thresh_fig = get_threshold_curve_fig(pipeline, X_test, y_test)
         if thresh_fig:
             thresh_fig.add_vline(x=threshold, line_dash="dot", line_color="purple",
                                   annotation_text=f"Current: {threshold:.2f}",
@@ -1183,7 +1254,7 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
     if X_test is not None and cat_cols and num_cols:
         all_feats = num_cols + cat_cols
         dep_feature = st.selectbox("Select feature for SHAP dependence", all_feats, key="dep_feat")
-        with st.spinner("Computing SHAP values for test sample…"):
+        with st.spinner("Computing SHAP dependence (may take a few seconds)…"):
             dep_fig = get_shap_dependence_fig(pipeline, X_test, dep_feature, cat_cols, num_cols)
         if dep_fig:
             st.plotly_chart(dep_fig, use_container_width=True)
@@ -1290,42 +1361,133 @@ def main():
         render_model_performance(pipeline, model_name, cat_cols, num_cols)
 
     with tab9:
-        st.header("AI Assistant")
-        st.markdown("Ask questions about churn predictions. Powered by Google Gemini.")
-        api_key = GOOGLE_AI_API_KEY
-        if not api_key:
-            st.warning("GOOGLE_AI_API_KEY not set. Enter it below to enable AI features.")
-            api_key = st.text_input("Gemini API key (optional)", type="password")
+        st.header("🤖 AI Assistant")
+        st.markdown("Chat with Gemini AI about churn predictions, customer insights, and retention strategies.")
 
+        # ── API key setup ──────────────────────────────────────────────────────
+        api_key = GOOGLE_AI_API_KEY or st.session_state.get("_session_api_key", "")
+        if not GOOGLE_AI_API_KEY:
+            with st.expander("🔑 Configure API Key", expanded=not bool(api_key)):
+                st.warning(
+                    "**GOOGLE_AI_API_KEY** not found in environment. "
+                    "Add it to Replit Secrets (🔒 in the sidebar) for permanent access."
+                )
+                entered_key = st.text_input(
+                    "Or enter your Gemini API key for this session:",
+                    type="password", key="api_key_input",
+                    placeholder="AIza...",
+                )
+                if entered_key:
+                    st.session_state["_session_api_key"] = entered_key
+                    api_key = entered_key
+                    st.success("✅ API key saved for this session.")
+
+        # ── Session chat history ───────────────────────────────────────────────
+        if "ai_messages" not in st.session_state:
+            st.session_state["ai_messages"] = []
+
+        # ── Build prediction context if available ──────────────────────────────
         last_shap = st.session_state.get("last_shap")
-        if last_shap and api_key:
+        last_result = st.session_state.get("last_result")
+        prediction_context = ""
+        if last_shap and last_result:
             shap_vals, feat_names, pred, prob = last_shap
-            if st.button("Why is this customer predicted to churn?"):
-                with st.spinner("Analysing with Gemini…"):
-                    explanation = get_gemini_explanation(shap_vals, feat_names, pred, prob, api_key)
-                    st.markdown("### AI Analysis")
-                    st.write(explanation)
-        elif not last_shap:
-            st.info("Run a single prediction first (Tab 2), then come back here for an AI explanation.")
+            pairs = sorted(zip(feat_names, shap_vals), key=lambda x: abs(x[1]), reverse=True)[:5]
+            top_features = "; ".join([f"{f}: {v:+.3f}" for f, v in pairs])
+            prediction_context = (
+                f"Most recent prediction: customer predicted to {'CHURN' if pred == 1 else 'STAY'} "
+                f"with {prob:.1%} probability. "
+                f"Top 5 SHAP drivers: {top_features}."
+            )
+        else:
+            st.info("💡 Run a **Single Prediction** (Tab 2) first — the AI will then have full context about the customer and their SHAP drivers.")
 
-        question = st.text_input("Or ask any question about churn:")
-        if question and api_key:
-            with st.spinner("Thinking…"):
-                try:
-                    from google import genai
-                    client = genai.Client(api_key=api_key)
-                    response = client.models.generate_content(
-                        model="gemini-2.0-flash-exp",
-                        contents=[
-                            f"Context: This is a telco customer churn prediction system. "
-                            f"Features include tenure, contract type, monthly charges, payment method. "
-                            f"Question: {question}"
-                        ],
-                    )
-                    st.markdown("### Answer")
-                    st.write(response.text)
-                except Exception as e:
-                    st.error(f"Error: {e}")
+        # ── Suggested prompts ──────────────────────────────────────────────────
+        st.markdown("**Quick questions:**")
+        SUGGESTED = [
+            "Why is this customer likely to churn?",
+            "What retention action has the best ROI?",
+            "Which customer segments churn the most?",
+            "How does tenure affect churn risk?",
+            "What does a SHAP value of +0.3 mean?",
+            "How can I retain fiber optic customers?",
+        ]
+        sp_cols = st.columns(3)
+        clicked_prompt = None
+        for i, prompt in enumerate(SUGGESTED):
+            if sp_cols[i % 3].button(prompt, key=f"sp_{i}", use_container_width=True):
+                clicked_prompt = prompt
+
+        st.divider()
+
+        # ── Display conversation history ───────────────────────────────────────
+        for msg in st.session_state["ai_messages"]:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
+
+        # ── Chat input ─────────────────────────────────────────────────────────
+        user_input = st.chat_input("Ask anything about churn…") or clicked_prompt
+
+        if user_input:
+            if not api_key:
+                st.warning("⚠️ Please configure a Gemini API key above to use the AI Assistant.")
+            else:
+                st.session_state["ai_messages"].append({"role": "user", "content": user_input})
+
+                # Build system context
+                system_ctx = (
+                    "You are an expert AI assistant embedded in a Telco Customer Churn Prediction platform. "
+                    "The platform uses an XGBoost model (ROC-AUC ≈ 0.84) trained on the IBM Telco dataset (5,042 customers). "
+                    "Key features: tenure, MonthlyCharges, TotalCharges, Contract type (Month-to-month/One year/Two year), "
+                    "InternetService (DSL/Fiber optic/No), TechSupport, OnlineSecurity, PaymentMethod, SeniorCitizen, gender. "
+                    "Overall churn rate is ~26.5%. Month-to-month contracts and Fiber optic internet show the highest churn rates. "
+                    "SHAP values explain individual predictions: positive values push toward churn, negative values reduce churn risk. "
+                    + (prediction_context if prediction_context else "No individual prediction has been run yet in this session.")
+                )
+
+                # Include conversation history for multi-turn context
+                history_text = ""
+                for msg in st.session_state["ai_messages"][:-1]:
+                    role = "User" if msg["role"] == "user" else "Assistant"
+                    history_text += f"\n{role}: {msg['content']}"
+
+                full_prompt = (
+                    f"System context: {system_ctx}"
+                    f"{history_text}"
+                    f"\nUser: {user_input}"
+                    f"\nAssistant:"
+                )
+
+                with st.spinner("Thinking…"):
+                    try:
+                        from google import genai
+                        client = genai.Client(api_key=api_key)
+                        response = client.models.generate_content(
+                            model="gemini-2.0-flash-exp",
+                            contents=[full_prompt],
+                        )
+                        ai_text = response.text
+                        st.session_state["ai_messages"].append({"role": "assistant", "content": ai_text})
+                        st.rerun()
+                    except Exception as e:
+                        err = str(e)
+                        # Remove the failed user message so they can retry cleanly
+                        st.session_state["ai_messages"].pop()
+                        if any(k in err.upper() for k in ["API_KEY", "401", "403", "PERMISSION"]):
+                            st.error("❌ Invalid or expired API key. Please check your key in the expander above.")
+                        elif any(k in err.lower() for k in ["quota", "429", "rate limit"]):
+                            st.error("⏱️ Rate limit reached. Please wait a moment before sending another message.")
+                        else:
+                            st.error(f"❌ Gemini error: {err}")
+
+        # ── Clear conversation ─────────────────────────────────────────────────
+        if st.session_state.get("ai_messages"):
+            if st.button("🗑️ Clear conversation", key="clear_chat"):
+                st.session_state["ai_messages"] = []
+                st.rerun()
+
+        if not api_key:
+            st.info("💡 **Tip:** Add `GOOGLE_AI_API_KEY` to Replit Secrets (🔒 icon in the sidebar) for persistent access without re-entering the key each session.")
 
 
 if __name__ == "__main__":
