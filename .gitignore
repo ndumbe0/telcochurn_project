@@ -41,12 +41,21 @@ models/*.json
 models/*.pkl
 models/*.joblib
 models/*.csv
+models/*.png
 data/processed/
 data/eda_output/
 *.pbix
 
 # Crush / AI tooling
 .crush/
+
+# Replit
+.replit
+replit.nix
+replit.md
+
+# Attached assets (pasted content cache)
+attached_assets/
 
 # Streamlit
 .streamlit/
