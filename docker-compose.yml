@@ -5,7 +5,7 @@ services:
     build: .
     container_name: telco-churn-predictor
     ports:
-      - "8501:8501"
+      - "127.0.0.1:8501:8501"
     volumes:
       - ./data:/app/data
       - ./models:/app/models

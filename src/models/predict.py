@@ -3,7 +3,6 @@ import numpy as np
 import logging
 import joblib
 from pathlib import Path
-import shap
 
 logger = logging.getLogger(__name__)
 
@@ -30,32 +29,40 @@ def _preprocess_input(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def predict_single(customer_data: dict) -> dict:
-    pipeline, model_name, cat_cols, num_cols = load_model_info()
-    if pipeline is None:
-        return {"error": "Model not found"}
-    df = pd.DataFrame([customer_data])
-    df = _preprocess_input(df)
-    proba = pipeline.predict_proba(df)[0, 1]
-    pred = int(proba >= 0.5)
-    return {
-        "prediction": pred,
-        "churn_probability": round(float(proba), 4),
-        "churn_label": "Yes" if pred == 1 else "No",
-        "model": model_name,
-    }
+    try:
+        pipeline, model_name, cat_cols, num_cols = load_model_info()
+        if pipeline is None:
+            return {"error": "Model not found"}
+        df = pd.DataFrame([customer_data])
+        df = _preprocess_input(df)
+        proba = pipeline.predict_proba(df)[0, 1]
+        pred = int(proba >= 0.5)
+        return {
+            "prediction": pred,
+            "churn_probability": round(float(proba), 4),
+            "churn_label": "Yes" if pred == 1 else "No",
+            "model": model_name,
+        }
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        return {"error": str(e)}
 
 
 def predict_batch(df: pd.DataFrame) -> pd.DataFrame:
-    pipeline, model_name, cat_cols, num_cols = load_model_info()
-    if pipeline is None:
-        raise FileNotFoundError("Model not found")
-    df = _preprocess_input(df)
-    proba = pipeline.predict_proba(df)[:, 1]
-    preds = (proba >= 0.5).astype(int)
-    result = df.copy()
-    result["Churn_Probability"] = proba
-    result["Prediction"] = ["Yes" if p == 1 else "No" for p in preds]
-    return result
+    try:
+        pipeline, model_name, cat_cols, num_cols = load_model_info()
+        if pipeline is None:
+            raise FileNotFoundError("Model not found")
+        df = _preprocess_input(df)
+        proba = pipeline.predict_proba(df)[:, 1]
+        preds = (proba >= 0.5).astype(int)
+        result = df.copy()
+        result["Churn_Probability"] = proba
+        result["Prediction"] = ["Yes" if p == 1 else "No" for p in preds]
+        return result
+    except Exception as e:
+        logger.error(f"Batch prediction error: {e}")
+        raise
 
 
 def get_shap_values(customer_data: dict, pipeline=None, cat_cols=None, num_cols=None):
@@ -72,6 +79,7 @@ def get_shap_values(customer_data: dict, pipeline=None, cat_cols=None, num_cols=
     feature_names = num_cols + list(cat_feature_names)
     X_df = pd.DataFrame(X_processed, columns=feature_names)
     try:
+        import shap
         if hasattr(model, "feature_importances_"):
             explainer = shap.TreeExplainer(model)
         else:
