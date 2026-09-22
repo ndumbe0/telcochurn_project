@@ -1,0 +1,388 @@
+<?xml version='1.0' encoding='utf-8'?>
+<workbook source-build='20231.23.0909.1147' source-platform='win' version='18.1'>
+  <datasources>
+    <datasource hasembeddeddata='no' name='telco_churn_unified' version='18.1'>
+      <connection class='textfile' directory='.' filename='telco_churn_unified.csv' locale='en_IN' single-file='yes'>
+      <metadata-record class='column'>
+        <remote-name>customer_id</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[customer_id]</local-name>
+        <parent-name>[customer_id]</parent-name>
+        <remote-alias>customer_id</remote-alias>
+        <ordinal>0</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>gender</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[gender]</local-name>
+        <parent-name>[gender]</parent-name>
+        <remote-alias>gender</remote-alias>
+        <ordinal>1</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>senior_citizen</remote-name>
+        <remote-type>20</remote-type>
+        <local-name>[senior_citizen]</local-name>
+        <parent-name>[senior_citizen]</parent-name>
+        <remote-alias>senior_citizen</remote-alias>
+        <ordinal>2</ordinal>
+        <local-type>integer</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>partner</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[partner]</local-name>
+        <parent-name>[partner]</parent-name>
+        <remote-alias>partner</remote-alias>
+        <ordinal>3</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>dependents</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[dependents]</local-name>
+        <parent-name>[dependents]</parent-name>
+        <remote-alias>dependents</remote-alias>
+        <ordinal>4</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>tenure</remote-name>
+        <remote-type>20</remote-type>
+        <local-name>[tenure]</local-name>
+        <parent-name>[tenure]</parent-name>
+        <remote-alias>tenure</remote-alias>
+        <ordinal>5</ordinal>
+        <local-type>integer</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>phone_service</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[phone_service]</local-name>
+        <parent-name>[phone_service]</parent-name>
+        <remote-alias>phone_service</remote-alias>
+        <ordinal>6</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>multiple_lines</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[multiple_lines]</local-name>
+        <parent-name>[multiple_lines]</parent-name>
+        <remote-alias>multiple_lines</remote-alias>
+        <ordinal>7</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>internet_service</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[internet_service]</local-name>
+        <parent-name>[internet_service]</parent-name>
+        <remote-alias>internet_service</remote-alias>
+        <ordinal>8</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>online_security</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[online_security]</local-name>
+        <parent-name>[online_security]</parent-name>
+        <remote-alias>online_security</remote-alias>
+        <ordinal>9</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>online_backup</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[online_backup]</local-name>
+        <parent-name>[online_backup]</parent-name>
+        <remote-alias>online_backup</remote-alias>
+        <ordinal>10</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>device_protection</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[device_protection]</local-name>
+        <parent-name>[device_protection]</parent-name>
+        <remote-alias>device_protection</remote-alias>
+        <ordinal>11</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>tech_support</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[tech_support]</local-name>
+        <parent-name>[tech_support]</parent-name>
+        <remote-alias>tech_support</remote-alias>
+        <ordinal>12</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>streaming_tv</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[streaming_tv]</local-name>
+        <parent-name>[streaming_tv]</parent-name>
+        <remote-alias>streaming_tv</remote-alias>
+        <ordinal>13</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>streaming_movies</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[streaming_movies]</local-name>
+        <parent-name>[streaming_movies]</parent-name>
+        <remote-alias>streaming_movies</remote-alias>
+        <ordinal>14</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>contract</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[contract]</local-name>
+        <parent-name>[contract]</parent-name>
+        <remote-alias>contract</remote-alias>
+        <ordinal>15</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>paperless_billing</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[paperless_billing]</local-name>
+        <parent-name>[paperless_billing]</parent-name>
+        <remote-alias>paperless_billing</remote-alias>
+        <ordinal>16</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>payment_method</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[payment_method]</local-name>
+        <parent-name>[payment_method]</parent-name>
+        <remote-alias>payment_method</remote-alias>
+        <ordinal>17</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>monthly_charges</remote-name>
+        <remote-type>5</remote-type>
+        <local-name>[monthly_charges]</local-name>
+        <parent-name>[monthly_charges]</parent-name>
+        <remote-alias>monthly_charges</remote-alias>
+        <ordinal>18</ordinal>
+        <local-type>real</local-type>
+        <aggregation>Sum</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>total_charges</remote-name>
+        <remote-type>5</remote-type>
+        <local-name>[total_charges]</local-name>
+        <parent-name>[total_charges]</parent-name>
+        <remote-alias>total_charges</remote-alias>
+        <ordinal>19</ordinal>
+        <local-type>real</local-type>
+        <aggregation>Sum</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>churn</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[churn]</local-name>
+        <parent-name>[churn]</parent-name>
+        <remote-alias>churn</remote-alias>
+        <ordinal>20</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>churned</remote-name>
+        <remote-type>20</remote-type>
+        <local-name>[churned]</local-name>
+        <parent-name>[churned]</parent-name>
+        <remote-alias>churned</remote-alias>
+        <ordinal>21</ordinal>
+        <local-type>integer</local-type>
+        <aggregation>Sum</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      <metadata-record class='column'>
+        <remote-name>tenure_group</remote-name>
+        <remote-type>130</remote-type>
+        <local-name>[tenure_group]</local-name>
+        <parent-name>[tenure_group]</parent-name>
+        <remote-alias>tenure_group</remote-alias>
+        <ordinal>22</ordinal>
+        <local-type>string</local-type>
+        <aggregation>None</aggregation>
+        <contains-null>true</contains-null>
+      </metadata-record>
+      </connection>
+      <column caption='Customer ID' datatype='string' name='[customer_id]' role='dimension' type='nominal'/>
+      <column caption='Gender' datatype='string' name='[gender]' role='dimension' type='nominal'/>
+      <column caption='Senior Citizen' datatype='integer' name='[senior_citizen]' role='dimension' type='quantitative'/>
+      <column caption='Partner' datatype='string' name='[partner]' role='dimension' type='nominal'/>
+      <column caption='Dependents' datatype='string' name='[dependents]' role='dimension' type='nominal'/>
+      <column caption='Tenure' datatype='integer' name='[tenure]' role='dimension' type='quantitative'/>
+      <column caption='Phone Service' datatype='string' name='[phone_service]' role='dimension' type='nominal'/>
+      <column caption='Multiple Lines' datatype='string' name='[multiple_lines]' role='dimension' type='nominal'/>
+      <column caption='Internet Service' datatype='string' name='[internet_service]' role='dimension' type='nominal'/>
+      <column caption='Online Security' datatype='string' name='[online_security]' role='dimension' type='nominal'/>
+      <column caption='Online Backup' datatype='string' name='[online_backup]' role='dimension' type='nominal'/>
+      <column caption='Device Protection' datatype='string' name='[device_protection]' role='dimension' type='nominal'/>
+      <column caption='Tech Support' datatype='string' name='[tech_support]' role='dimension' type='nominal'/>
+      <column caption='Streaming TV' datatype='string' name='[streaming_tv]' role='dimension' type='nominal'/>
+      <column caption='Streaming Movies' datatype='string' name='[streaming_movies]' role='dimension' type='nominal'/>
+      <column caption='Contract' datatype='string' name='[contract]' role='dimension' type='nominal'/>
+      <column caption='Paperless Billing' datatype='string' name='[paperless_billing]' role='dimension' type='nominal'/>
+      <column caption='Payment Method' datatype='string' name='[payment_method]' role='dimension' type='nominal'/>
+      <column caption='Monthly Charges' datatype='real' name='[monthly_charges]' role='measure' type='quantitative'/>
+      <column caption='Total Charges' datatype='real' name='[total_charges]' role='measure' type='quantitative'/>
+      <column caption='Churn' datatype='string' name='[churn]' role='dimension' type='nominal'/>
+      <column caption='Churned (0/1)' datatype='integer' name='[churned]' role='measure' type='quantitative'/>
+      <column caption='Tenure Group' datatype='string' name='[tenure_group]' role='dimension' type='nominal'/>
+    </datasource>
+  </datasources>
+  <worksheets>
+    <worksheet name='Churn Rate by Contract'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='telco_churn_unified' name='telco_churn_unified'/>
+          </datasources>
+          <datasource-dependencies datasource='telco_churn_unified'>
+        <column caption='Churned (0/1)' datatype='integer' name='[churned]' role='measure' type='quantitative'/>
+        <column-instance column='[churned]' derivation='Avg' name='[avg:churned:qk]' pivot='key' type='quantitative'/>
+        <column caption='Contract' datatype='string' name='[contract]' role='dimension' type='nominal'/>
+        <column-instance column='[contract]' derivation='None' name='[none:contract:nk]' pivot='key' type='quantitative'/>
+          </datasource-dependencies>
+          <aggregation value='true'/>
+        </view>
+        <style/>
+        <panes/>
+        <rows>[telco_churn_unified].[avg:churned:qk]</rows>
+        <cols>[telco_churn_unified].[none:contract:nk]</cols>
+      </table>
+    </worksheet>
+    <worksheet name='Churn by Tenure Group'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='telco_churn_unified' name='telco_churn_unified'/>
+          </datasources>
+          <datasource-dependencies datasource='telco_churn_unified'>
+        <column caption='Churned (0/1)' datatype='integer' name='[churned]' role='measure' type='quantitative'/>
+        <column-instance column='[churned]' derivation='Avg' name='[avg:churned:qk]' pivot='key' type='quantitative'/>
+        <column caption='Tenure Group' datatype='string' name='[tenure_group]' role='dimension' type='nominal'/>
+        <column-instance column='[tenure_group]' derivation='None' name='[none:tenure_group:nk]' pivot='key' type='quantitative'/>
+          </datasource-dependencies>
+          <aggregation value='true'/>
+        </view>
+        <style/>
+        <panes/>
+        <rows>[telco_churn_unified].[avg:churned:qk]</rows>
+        <cols>[telco_churn_unified].[none:tenure_group:nk]</cols>
+      </table>
+    </worksheet>
+    <worksheet name='Churn by Payment Method'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='telco_churn_unified' name='telco_churn_unified'/>
+          </datasources>
+          <datasource-dependencies datasource='telco_churn_unified'>
+        <column caption='Churned (0/1)' datatype='integer' name='[churned]' role='measure' type='quantitative'/>
+        <column-instance column='[churned]' derivation='Avg' name='[avg:churned:qk]' pivot='key' type='quantitative'/>
+        <column caption='Payment Method' datatype='string' name='[payment_method]' role='dimension' type='nominal'/>
+        <column-instance column='[payment_method]' derivation='None' name='[none:payment_method:nk]' pivot='key' type='quantitative'/>
+          </datasource-dependencies>
+          <aggregation value='true'/>
+        </view>
+        <style/>
+        <panes/>
+        <rows>[telco_churn_unified].[avg:churned:qk]</rows>
+        <cols>[telco_churn_unified].[none:payment_method:nk]</cols>
+      </table>
+    </worksheet>
+    <worksheet name='Churn by Internet Service'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='telco_churn_unified' name='telco_churn_unified'/>
+          </datasources>
+          <datasource-dependencies datasource='telco_churn_unified'>
+        <column caption='Churned (0/1)' datatype='integer' name='[churned]' role='measure' type='quantitative'/>
+        <column-instance column='[churned]' derivation='Avg' name='[avg:churned:qk]' pivot='key' type='quantitative'/>
+        <column caption='Internet Service' datatype='string' name='[internet_service]' role='dimension' type='nominal'/>
+        <column-instance column='[internet_service]' derivation='None' name='[none:internet_service:nk]' pivot='key' type='quantitative'/>
+          </datasource-dependencies>
+          <aggregation value='true'/>
+        </view>
+        <style/>
+        <panes/>
+        <rows>[telco_churn_unified].[avg:churned:qk]</rows>
+        <cols>[telco_churn_unified].[none:internet_service:nk]</cols>
+      </table>
+    </worksheet>
+    <worksheet name='Monthly Revenue by Churn'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='telco_churn_unified' name='telco_churn_unified'/>
+          </datasources>
+          <datasource-dependencies datasource='telco_churn_unified'>
+        <column caption='Monthly Charges' datatype='real' name='[monthly_charges]' role='measure' type='quantitative'/>
+        <column-instance column='[monthly_charges]' derivation='Sum' name='[sum:monthly_charges:qk]' pivot='key' type='quantitative'/>
+        <column caption='Churn' datatype='string' name='[churn]' role='dimension' type='nominal'/>
+        <column-instance column='[churn]' derivation='None' name='[none:churn:nk]' pivot='key' type='quantitative'/>
+          </datasource-dependencies>
+          <aggregation value='true'/>
+        </view>
+        <style/>
+        <panes/>
+        <rows>[telco_churn_unified].[sum:monthly_charges:qk]</rows>
+        <cols>[telco_churn_unified].[none:churn:nk]</cols>
+      </table>
+    </worksheet>
+  </worksheets>
+  <windows source-size='1600 900'/>
+</workbook>

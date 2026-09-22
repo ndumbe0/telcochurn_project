@@ -1,0 +1,38 @@
+dimension,level,customers,churned,avg_monthly_charges,avg_tenure,churn_rate
+contract,Month-to-month,2744,1184,66.9,18.2,0.4315
+contract,One year,1055,122,66.0,42.0,0.1156
+contract,Two year,1243,30,60.28,56.3,0.0241
+payment_method,Bank transfer (automatic),1125,198,67.96,43.9,0.176
+payment_method,Credit card (automatic),1090,168,66.74,43.5,0.1541
+payment_method,Electronic check,1699,758,75.73,25.0,0.4461
+payment_method,Mailed check,1128,212,44.57,22.1,0.1879
+tenure_group,0-12,1542,733,56.83,4.7,0.4754
+tenure_group,13-24,732,215,61.72,18.3,0.2937
+tenure_group,25-36,603,124,65.32,30.4,0.2056
+tenure_group,37-48,559,108,65.38,42.7,0.1932
+tenure_group,49-60,590,87,71.53,54.5,0.1475
+tenure_group,61-72,1016,69,75.98,68.0,0.0679
+internet_service,DSL,1715,309,58.1,33.1,0.1802
+internet_service,Fiber optic,2247,951,91.56,33.0,0.4232
+internet_service,No,1080,76,21.09,30.8,0.0704
+online_security,False,1478,617,76.38,25.6,0.4175
+online_security,No,1680,468,54.31,28.6,0.2786
+online_security,No internet service,429,37,20.96,29.9,0.0862
+online_security,True,870,124,79.61,45.0,0.1425
+online_security,Yes,585,90,78.22,45.1,0.1538
+gender,Female,2484,661,65.7,32.6,0.2661
+gender,Male,2558,675,64.48,32.5,0.2639
+senior_citizen,0,4223,996,62.14,32.5,0.2359
+senior_citizen,1,819,340,80.23,32.8,0.4151
+partner,False,1538,494,62.66,23.3,0.3212
+partner,No,1047,348,61.75,24.6,0.3324
+partner,True,1461,286,68.15,42.2,0.1958
+partner,Yes,996,208,67.83,41.1,0.2088
+dependents,False,2069,643,67.36,29.5,0.3108
+dependents,No,1412,456,67.24,30.2,0.3229
+dependents,True,930,137,60.82,39.3,0.1473
+dependents,Yes,631,100,59.06,38.0,0.1585
+paperless_billing,False,1224,193,52.6,32.3,0.1577
+paperless_billing,No,823,138,52.6,32.9,0.1677
+paperless_billing,True,1775,587,74.11,32.6,0.3307
+paperless_billing,Yes,1220,418,72.88,32.5,0.3426
