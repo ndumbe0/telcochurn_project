@@ -212,7 +212,7 @@ def display_shap_bar(shap_values, feature_names):
         xaxis_title="SHAP Value — red pushes toward churn, blue away",
         height=420,
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def display_shap_waterfall(shap_values, feature_names, base_value: float, final_prob: float):
@@ -254,7 +254,7 @@ def display_shap_waterfall(shap_values, feature_names, base_value: float, final_
         height=420,
         waterfallgap=0.3,
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def display_radar_chart(customer_data: dict, df_clean: pd.DataFrame):
@@ -288,7 +288,7 @@ def display_radar_chart(customer_data: dict, df_clean: pd.DataFrame):
         polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
         height=380,
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def df_to_excel(df: pd.DataFrame) -> bytes:
@@ -339,14 +339,14 @@ def display_batch_insights(results: pd.DataFrame):
                          color_discrete_map={"Low": "#1f77b4", "Medium": "#ff7f0e", "High": "#d62728"},
                          title="Customer Risk Distribution")
             fig.update_traces(textinfo="label+percent+value")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
     with c2:
         fig = px.histogram(results, x="Churn_Probability", color="Prediction",
                            color_discrete_map={"Churn": "#d62728", "Stay": "#1f77b4"},
                            nbins=25, title="Churn Probability Distribution",
                            labels={"Churn_Probability": "Churn Probability (%)"})
         fig.update_layout(barmode="overlay", bargap=0.05)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     if "Contract" in results.columns and "Revenue_at_Risk ($)" in results.columns:
         seg = (results.groupby("Contract")["Revenue_at_Risk ($)"].sum()
@@ -358,7 +358,7 @@ def display_batch_insights(results: pd.DataFrame):
             textposition="outside",
         ))
         fig.update_layout(title="Revenue at Risk by Contract Type ($)", height=300)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.subheader("🚨 Top 10 Highest-Risk Customers")
     top_risk = results.sort_values("Churn_Probability", ascending=False).head(10)
@@ -370,7 +370,7 @@ def display_batch_insights(results: pd.DataFrame):
         top_risk[display_cols].style.background_gradient(
             subset=["Churn_Probability"] if "Churn_Probability" in display_cols else [],
             cmap="YlOrRd"),
-        use_container_width=True,
+        width="stretch",
     )
 
 
@@ -455,7 +455,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
                          title="Churn Rate by Contract")
             fig.update_traces(textposition="outside")
             fig.update_layout(height=320, showlegend=False, coloraxis_showscale=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
     with c2:
         if "InternetService" in df_clean.columns and "Churn" in df_clean.columns:
@@ -467,7 +467,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
                           title="Churn Rate by Internet Service")
             fig2.update_traces(textposition="outside")
             fig2.update_layout(height=320, showlegend=False, coloraxis_showscale=False)
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width="stretch")
 
     with c3:
         if "tenure" in df_clean.columns and "Churn" in df_clean.columns:
@@ -482,7 +482,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
                            markers=True, title="Churn Rate by Tenure Cohort",
                            color_discrete_sequence=["#e74c3c"])
             fig3.update_layout(height=320)
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig3, width="stretch")
 
     st.markdown("---")
 
@@ -503,7 +503,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
         fig_rev.update_traces(textinfo="label+percent+value",
                                texttemplate="%{label}<br>$%{value:,.0f} (%{percent})")
         fig_rev.update_layout(height=350)
-        st.plotly_chart(fig_rev, use_container_width=True)
+        st.plotly_chart(fig_rev, width="stretch")
 
     st.markdown("---")
 
@@ -522,7 +522,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
                 "Customers": int(top_row["Count"]),
             })
     if risk_rows:
-        st.dataframe(pd.DataFrame(risk_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(risk_rows), width="stretch", hide_index=True)
 
     # ── Prediction history preview ─────────────────────────────────────────────
     history = st.session_state.get("prediction_history", [])
@@ -532,7 +532,7 @@ def render_executive_summary(df_clean, pipeline, model_name, cat_cols, num_cols)
         hist_df = pd.DataFrame(history[:5])
         st.dataframe(
             hist_df.style.background_gradient(subset=["Churn Prob %"], cmap="YlOrRd"),
-            use_container_width=True, hide_index=True,
+            width="stretch", hide_index=True,
         )
 
 
@@ -545,7 +545,7 @@ def render_single_prediction(df_clean, pipeline, model_name, cat_cols, num_cols)
 
     customer_data = build_customer_input(cat_cols, num_cols)
 
-    if st.button("Predict Churn", type="primary", use_container_width=True):
+    if st.button("Predict Churn", type="primary", width="stretch"):
         result = predict_single(customer_data)
         if "error" in result:
             st.error(result["error"])
@@ -579,7 +579,7 @@ def render_single_prediction(df_clean, pipeline, model_name, cat_cols, num_cols)
         st.markdown("---")
         gc1, gc2 = st.columns(2)
         with gc1:
-            st.plotly_chart(display_gauge(prob), use_container_width=True)
+            st.plotly_chart(display_gauge(prob), width="stretch")
         with gc2:
             display_radar_chart(customer_data, df_clean)
 
@@ -645,7 +645,7 @@ def render_single_prediction(df_clean, pipeline, model_name, cat_cols, num_cols)
             hist_df = pd.DataFrame(history)
             st.dataframe(
                 hist_df.style.background_gradient(subset=["Churn Prob %"], cmap="YlOrRd"),
-                use_container_width=True, hide_index=True,
+                width="stretch", hide_index=True,
             )
             if st.button("🗑️ Clear History"):
                 st.session_state["prediction_history"] = []
@@ -675,7 +675,7 @@ def render_batch_prediction():
                 st.download_button(
                     "⬇️ Download Sample CSV", data=f,
                     file_name="sample_customers.csv", mime="text/csv",
-                    use_container_width=True,
+                    width="stretch",
                 )
 
     uploaded_file = st.file_uploader("Choose a CSV file (max 10 MB)", type="csv")
@@ -715,14 +715,14 @@ def render_batch_prediction():
 
     st.success(f"✅ File loaded: **{len(df_batch):,} rows × {df_batch.shape[1]} columns** ({size_mb:.2f} MB)")
     with st.expander("Preview uploaded data"):
-        st.dataframe(df_batch.head(10), use_container_width=True)
+        st.dataframe(df_batch.head(10), width="stretch")
 
     # ── Caching keyed to file content hash ────────────────────────────────────
     file_hash = hash(uploaded_file.getvalue())
     cache_key = f"batch_results_{file_hash}"
 
     run_col, _ = st.columns([1, 3])
-    if run_col.button("🚀 Run Batch Prediction", type="primary", use_container_width=True):
+    if run_col.button("🚀 Run Batch Prediction", type="primary", width="stretch"):
         with st.spinner(f"Running predictions on {len(df_batch):,} customers…"):
             try:
                 results = predict_batch(df_batch)
@@ -745,7 +745,7 @@ def render_batch_prediction():
             "⬇️ Download CSV",
             data=results.to_csv(index=False).encode(),
             file_name="churn_predictions.csv", mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
     with dl2:
         st.download_button(
@@ -753,11 +753,11 @@ def render_batch_prediction():
             data=df_to_excel(results),
             file_name="churn_predictions.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True,
+            width="stretch",
         )
 
     with st.expander("Full results table", expanded=False):
-        st.dataframe(results, use_container_width=True)
+        st.dataframe(results, width="stretch")
 
     display_batch_insights(results)
 
@@ -857,7 +857,7 @@ def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dic
             pass
 
     if scenarios:
-        st.plotly_chart(build_what_if_chart(baseline_prob, scenarios), use_container_width=True)
+        st.plotly_chart(build_what_if_chart(baseline_prob, scenarios), width="stretch")
         rows = [{
             "Scenario": s["label"],
             "Churn Probability": f"{s['probability']:.1%}",
@@ -867,7 +867,7 @@ def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dic
                 else ("⬇️ Lower Risk" if s["probability"] - baseline_prob < -0.01 else "➡️ No Change")
             ),
         } for s in scenarios]
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
     else:
         st.info("Change any field above to generate what-if scenarios.")
 
@@ -899,7 +899,7 @@ def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dic
             xaxis_title="Probability Reduction (pp)",
             height=max(300, len(recs) * 55),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         for rec in recs:
             icon = category_icon.get(rec["category"], "📌")
@@ -969,7 +969,7 @@ def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dic
 
         roi_fig = get_roi_comparison_fig(recs_with_roi)
         if roi_fig:
-            st.plotly_chart(roi_fig, use_container_width=True)
+            st.plotly_chart(roi_fig, width="stretch")
 
     # ROI summary table
     roi_table = pd.DataFrame([{
@@ -980,7 +980,7 @@ def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dic
         "ROI %": f"{r['roi_pct']:.0f}%",
         "Break-even": f"{r['break_even']} mo" if r["break_even"] != "N/A" else "N/A",
     } for r in recs_with_roi])
-    st.dataframe(roi_table, use_container_width=True, hide_index=True)
+    st.dataframe(roi_table, width="stretch", hide_index=True)
 
     # Break-even chart for top ROI intervention
     if recs_with_roi:
@@ -994,7 +994,7 @@ def render_what_if_and_roi(customer_data: dict, last_result: dict, clv_info: dic
                 monthly_charges=monthly,
                 cost=best["cost"],
             )
-            st.plotly_chart(be_fig, use_container_width=True)
+            st.plotly_chart(be_fig, width="stretch")
 
 
 def render_segment_profiler(df_clean: pd.DataFrame):
@@ -1056,7 +1056,7 @@ def render_segment_profiler(df_clean: pd.DataFrame):
                          title="Churn Rate by Contract (Segment)")
             fig.update_traces(textposition="outside")
             fig.update_layout(height=350, showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
     with c2:
         if "InternetService" in seg.columns and "Churn" in seg.columns:
             grp2 = seg.groupby("InternetService")["Churn"].mean().reset_index()
@@ -1067,7 +1067,7 @@ def render_segment_profiler(df_clean: pd.DataFrame):
                           title="Churn Rate by Internet Service (Segment)")
             fig2.update_traces(textposition="outside")
             fig2.update_layout(height=350, showlegend=False)
-            st.plotly_chart(fig2, use_container_width=True)
+            st.plotly_chart(fig2, width="stretch")
 
     st.markdown("---")
     st.subheader("📅 Cohort Analysis — Churn by Tenure Band")
@@ -1101,10 +1101,10 @@ def render_segment_profiler(df_clean: pd.DataFrame):
             height=400,
             legend=dict(orientation="h", yanchor="bottom", y=-0.3),
         )
-        st.plotly_chart(fig_coh, use_container_width=True)
+        st.plotly_chart(fig_coh, width="stretch")
 
     with st.expander("📋 Full Segment Data"):
-        st.dataframe(seg.reset_index(drop=True), use_container_width=True)
+        st.dataframe(seg.reset_index(drop=True), width="stretch")
 
 
 def render_clusters(df_clean: pd.DataFrame):
@@ -1131,7 +1131,7 @@ def render_clusters(df_clean: pd.DataFrame):
 
     c1, c2 = st.columns(2)
     with c1:
-        st.plotly_chart(get_elbow_fig(sil_scores), use_container_width=True)
+        st.plotly_chart(get_elbow_fig(sil_scores), width="stretch")
 
     with st.spinner(f"Clustering customers into {n_clusters} groups…"):
         df_clustered = cluster_customers(df_clean, n_clusters=n_clusters)
@@ -1139,31 +1139,31 @@ def render_clusters(df_clean: pd.DataFrame):
     with c2:
         churn_fig = get_cluster_churn_fig(df_clustered)
         if churn_fig:
-            st.plotly_chart(churn_fig, use_container_width=True)
+            st.plotly_chart(churn_fig, width="stretch")
 
     st.markdown("---")
     st.subheader("🗺️ Customer Map (PCA 2D)")
     st.markdown("Each dot is a customer, coloured by cluster. Size = Monthly Charges. "
                 "Symbol = Churn status.")
     scatter_fig = get_cluster_scatter_fig(df_clustered)
-    st.plotly_chart(scatter_fig, use_container_width=True)
+    st.plotly_chart(scatter_fig, width="stretch")
 
     st.markdown("---")
     st.subheader("🔥 Cluster Feature Heatmap (Personas)")
     st.markdown("Normalised feature averages per cluster — green = high value, red = low.")
     profile_fig = get_cluster_profile_fig(df_clustered)
-    st.plotly_chart(profile_fig, use_container_width=True)
+    st.plotly_chart(profile_fig, width="stretch")
 
     st.markdown("---")
     st.subheader("📋 Cluster Summary Table")
     summary = get_cluster_summary_table(df_clustered)
-    st.dataframe(summary, use_container_width=True, hide_index=True)
+    st.dataframe(summary, width="stretch", hide_index=True)
 
     with st.expander("🔎 Browse Customers by Cluster"):
         chosen_cluster = st.selectbox("Select Cluster", sorted(df_clustered["Cluster"].unique()))
         cluster_df = df_clustered[df_clustered["Cluster"] == chosen_cluster].reset_index(drop=True)
         st.markdown(f"**{len(cluster_df):,} customers** in {chosen_cluster}")
-        st.dataframe(cluster_df, use_container_width=True)
+        st.dataframe(cluster_df, width="stretch")
 
 
 def render_model_performance(pipeline, model_name, cat_cols, num_cols):
@@ -1201,7 +1201,7 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
             thresh_fig.add_vline(x=threshold, line_dash="dot", line_color="purple",
                                   annotation_text=f"Current: {threshold:.2f}",
                                   annotation_position="top right")
-            st.plotly_chart(thresh_fig, use_container_width=True)
+            st.plotly_chart(thresh_fig, width="stretch")
 
     st.markdown("---")
 
@@ -1209,7 +1209,7 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
     st.subheader("🏅 Model Comparison Leaderboard")
     comp_fig = get_model_comparison_fig()
     if comp_fig:
-        st.plotly_chart(comp_fig, use_container_width=True)
+        st.plotly_chart(comp_fig, width="stretch")
 
     st.markdown("---")
 
@@ -1217,7 +1217,7 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
     st.subheader("🔑 Feature Importance")
     fi_fig = get_feature_importance_fig(pipeline, cat_cols or [], num_cols or [])
     if fi_fig:
-        st.plotly_chart(fi_fig, use_container_width=True)
+        st.plotly_chart(fi_fig, width="stretch")
 
     st.markdown("---")
 
@@ -1227,22 +1227,22 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
             st.subheader("📉 Confusion Matrix")
             cm_fig = get_confusion_matrix_fig(pipeline, X_test, y_test)
             if cm_fig:
-                st.plotly_chart(cm_fig, use_container_width=True)
+                st.plotly_chart(cm_fig, width="stretch")
         with c2:
             st.subheader("📈 ROC Curve")
             roc_fig, pr_fig = get_roc_and_pr_fig(pipeline, X_test, y_test)
             if roc_fig:
-                st.plotly_chart(roc_fig, use_container_width=True)
+                st.plotly_chart(roc_fig, width="stretch")
         if pr_fig:
             st.subheader("🎯 Precision-Recall Curve")
-            st.plotly_chart(pr_fig, use_container_width=True)
+            st.plotly_chart(pr_fig, width="stretch")
 
         # Calibration
         st.markdown("---")
         st.subheader("📏 Calibration Curve")
         cal_fig = get_calibration_fig(pipeline, X_test, y_test)
         if cal_fig:
-            st.plotly_chart(cal_fig, use_container_width=True)
+            st.plotly_chart(cal_fig, width="stretch")
 
     st.markdown("---")
 
@@ -1258,7 +1258,7 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
         with st.spinner("Computing SHAP dependence (may take a few seconds)…"):
             dep_fig = get_shap_dependence_fig(pipeline, X_test, dep_feature, cat_cols, num_cols)
         if dep_fig:
-            st.plotly_chart(dep_fig, use_container_width=True)
+            st.plotly_chart(dep_fig, width="stretch")
         else:
             st.info("SHAP dependence plot not available for this feature / model combination.")
     else:
@@ -1277,7 +1277,7 @@ def render_model_performance(pipeline, model_name, cat_cols, num_cols):
         with st.spinner("Computing partial dependence…"):
             pdp_fig = get_pdp_fig(pipeline, X_test, pdp_feature, cat_cols, num_cols)
         if pdp_fig:
-            st.plotly_chart(pdp_fig, use_container_width=True)
+            st.plotly_chart(pdp_fig, width="stretch")
         else:
             st.info("PDP not available for this feature / model combination.")
 
@@ -1351,12 +1351,12 @@ def main():
                     continue
                 st.markdown(f"### {section_title}")
                 if len(present) == 1:
-                    st.plotly_chart(figs[present[0]], use_container_width=True)
+                    st.plotly_chart(figs[present[0]], width="stretch")
                 else:
                     cols = st.columns(len(present))
                     for col, key in zip(cols, present):
                         with col:
-                            st.plotly_chart(figs[key], use_container_width=True)
+                            st.plotly_chart(figs[key], width="stretch")
                 st.markdown("---")
 
     with tab8:
@@ -1420,7 +1420,7 @@ def main():
         sp_cols = st.columns(3)
         clicked_prompt = None
         for i, prompt in enumerate(SUGGESTED):
-            if sp_cols[i % 3].button(prompt, key=f"sp_{i}", use_container_width=True):
+            if sp_cols[i % 3].button(prompt, key=f"sp_{i}", width="stretch"):
                 clicked_prompt = prompt
 
         st.divider()

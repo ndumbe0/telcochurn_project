@@ -242,12 +242,12 @@ The pipeline expects these **21 standard Telco-churn columns** (case-sensitive):
     c3.metric("Total Missing Values", total_nulls)
 
     st.markdown("**Preview (first 5 rows)**")
-    st.dataframe(raw_df.head(5), use_container_width=True)
+    st.dataframe(raw_df.head(5), width="stretch")
 
     null_rep = _null_report(raw_df)
     if not null_rep.empty:
         with st.expander(f"⚠️ Missing value report ({len(null_rep)} columns affected)"):
-            st.dataframe(null_rep, use_container_width=True)
+            st.dataframe(null_rep, width="stretch")
 
     # Check for Churn column
     if "Churn" not in raw_df.columns:
@@ -304,7 +304,7 @@ def _stage_clean():
     b4.metric("Missing Values After",  f"{nulls_after:,}", delta_color="inverse")
 
     st.markdown("**Cleaned data preview**")
-    st.dataframe(clean_df.head(8), use_container_width=True)
+    st.dataframe(clean_df.head(8), width="stretch")
 
     # ── Data types summary ────────────────────────────────────────────────────
     with st.expander("📋 Column types & sample values"):
@@ -315,7 +315,7 @@ def _stage_clean():
             "Sample":    [str(clean_df[c].dropna().iloc[0]) if len(clean_df[c].dropna()) > 0 else "—"
                           for c in clean_df.columns],
         })
-        st.dataframe(dtype_df, use_container_width=True, hide_index=True)
+        st.dataframe(dtype_df, width="stretch", hide_index=True)
 
     # ── Class balance ─────────────────────────────────────────────────────────
     if "Churn" in clean_df.columns:
@@ -331,7 +331,7 @@ def _stage_clean():
             st.caption(f"Class imbalance ratio (Stay:Churn) = {ratio:.1f}:1")
             st.caption("SMOTE will oversample the minority class during training.")
         with cc2:
-            st.plotly_chart(_class_balance_fig(clean_df), use_container_width=True)
+            st.plotly_chart(_class_balance_fig(clean_df), width="stretch")
 
     # ── Save to disk ──────────────────────────────────────────────────────────
     st.markdown("### Save Cleaned Data")
@@ -409,12 +409,12 @@ def _stage_configure():
             "Unique":   [clean_df[c].nunique() for c in cat_cols],
             "Top value":[str(clean_df[c].mode().iloc[0]) for c in cat_cols],
         })
-        st.dataframe(cat_info, use_container_width=True, hide_index=True)
+        st.dataframe(cat_info, width="stretch", hide_index=True)
     with fc2:
         st.markdown("**Numeric features**")
         num_info = clean_df[num_cols].agg(["mean", "std", "min", "max"]).T.round(2)
         num_info.index.name = "Feature"
-        st.dataframe(num_info, use_container_width=True)
+        st.dataframe(num_info, width="stretch")
 
     # ── Stratification check ──────────────────────────────────────────────────
     churn_rate = clean_df["Churn"].mean()
@@ -738,7 +738,7 @@ def _stage_results():
             .format({"ROC-AUC": "{:.4f}", "F1": "{:.4f}",
                      "Precision": "{:.4f}", "Recall": "{:.4f}",
                      "Accuracy": "{:.4f}", "CV AUC": "{:.4f}"}),
-        use_container_width=True,
+        width="stretch",
     )
 
     if len(comp) > 1:
@@ -750,7 +750,7 @@ def _stage_results():
         )
         fig_comp.update_traces(textposition="outside")
         fig_comp.update_layout(height=380, coloraxis_showscale=False)
-        st.plotly_chart(fig_comp, use_container_width=True)
+        st.plotly_chart(fig_comp, width="stretch")
 
     st.markdown("---")
 
@@ -775,7 +775,7 @@ def _stage_results():
         fig_cm.add_annotation(x=0.5, y=1.1, xref="paper", yref="paper",
             text=f"TN={cm_arr[0,0]}  FP={cm_arr[0,1]}  FN={cm_arr[1,0]}  TP={cm_arr[1,1]}",
             showarrow=False, font=dict(size=12))
-        st.plotly_chart(fig_cm, use_container_width=True)
+        st.plotly_chart(fig_cm, width="stretch")
 
     st.markdown("---")
 
@@ -788,7 +788,7 @@ def _stage_results():
             "and in which direction. Colour = feature value (red = high, blue = low). "
             "X-axis = impact on churn probability."
         )
-        st.image(str(shap_path), use_container_width=True)
+        st.image(str(shap_path), width="stretch")
     else:
         st.info("SHAP summary image not yet generated — it will appear here after training.")
 
